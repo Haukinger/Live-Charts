@@ -16,28 +16,29 @@
         <Button Grid.Row="1"  Click="UpdateAllOnClick">
             Move All
         </Button>
-        <lvc:CartesianChart Name="Chart" Grid.Row="2" Series="{Binding SeriesCollection}" >
+        <lvc:CartesianChart Name="Chart" Grid.Row="2" Series="{Binding SeriesCollection}" DisableAnimations="True" >
             <lvc:CartesianChart.AxisY>
                 <lvc:Axis Name="Axis">
                     <lvc:Axis.Sections>
-                        <lvc:AxisSection Value="8.5" StrokeThickness="3" Stroke="#F9D648">
-                            <lvc:AxisSection.Fill>
-                                <SolidColorBrush Color="#A3A3FF" Opacity=".4"></SolidColorBrush>
-                            </lvc:AxisSection.Fill>
-                        </lvc:AxisSection>
-                        <lvc:AxisSection Value="4" SectionWidth="8" Label="Good">
+                        <lvc:AxisSection FromValue="2" ToValue="3" Label="Good" From2Value="1" To2Value="4">
                             <lvc:AxisSection.Fill>
                                 <SolidColorBrush Color="#CDCDCD" Opacity=".4"></SolidColorBrush>
                             </lvc:AxisSection.Fill>
                         </lvc:AxisSection>
-                        <lvc:AxisSection Value="0" SectionWidth="4" Label="Bad">
+                    </lvc:Axis.Sections>
+                </lvc:Axis>
+            </lvc:CartesianChart.AxisY>
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis>
+                    <lvc:Axis.Sections>
+                        <lvc:AxisSection FromValue="1" ToValue="2" From2Value="3" To2Value="4" Label="Bad">
                             <lvc:AxisSection.Fill>
                                 <SolidColorBrush Color="#FF8585" Opacity=".4"></SolidColorBrush>
                             </lvc:AxisSection.Fill>
                         </lvc:AxisSection>
                     </lvc:Axis.Sections>
                 </lvc:Axis>
-            </lvc:CartesianChart.AxisY>
+            </lvc:CartesianChart.AxisX>
         </lvc:CartesianChart>
     </Grid>
 </UserControl>

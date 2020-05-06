@@ -119,6 +119,38 @@ namespace LiveCharts.Wpf
         }
 
         /// <summary>
+        /// From value property
+        /// </summary>
+        public static readonly DependencyProperty From2ValueProperty = DependencyProperty.Register(
+                                                                                                  "From2Value", typeof( double ), typeof( AxisSection ),
+                                                                                                  new PropertyMetadata( double.NaN, UpdateSection ) );
+        /// <summary>
+        /// Gets or sets the value where the section starts
+        /// </summary>
+        [Obsolete( "This property will be removed in future versions, instead use Value and SectionWidth properties" )]
+        public double From2Value
+        {
+            get { return (double)GetValue( From2ValueProperty ); }
+            set { SetValue( From2ValueProperty, value ); }
+        }
+
+        /// <summary>
+        /// To value property
+        /// </summary>
+        public static readonly DependencyProperty To2ValueProperty = DependencyProperty.Register(
+                                                                                                "To2Value", typeof( double ), typeof( AxisSection ),
+                                                                                                new PropertyMetadata( double.NaN, UpdateSection ) );
+        /// <summary>
+        /// Gets or sets the value where the section ends
+        /// </summary>
+        [Obsolete( "This property will be removed in future versions, instead use Value and SectionWidth properties" )]
+        public double To2Value
+        {
+            get { return (double)GetValue( To2ValueProperty ); }
+            set { SetValue( To2ValueProperty, value ); }
+        }
+
+        /// <summary>
         /// The value property
         /// </summary>
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
@@ -300,8 +332,11 @@ namespace LiveCharts.Wpf
             BindingOperations.SetBinding(_rectangle, VisibilityProperty,
                 new Binding {Path = new PropertyPath(VisibilityProperty), Source = this});
 
+            var source2 = source == AxisOrientation.X ? AxisOrientation.Y : AxisOrientation.X;
             var ax = source == AxisOrientation.X ? Model.Chart.AxisX[axis] : Model.Chart.AxisY[axis];
+            var ax2 = source2 == AxisOrientation.X ? Model.Chart.AxisX[axis] : Model.Chart.AxisY[axis];
             var uw = ax.EvaluatesUnitWidth ? ChartFunctions.GetUnitWidth(source, Model.Chart, axis) / 2 : 0;
+            var uw2 = ax2.EvaluatesUnitWidth ? ChartFunctions.GetUnitWidth(source2, Model.Chart, axis) / 2 : 0;
 
             if (Parent == null)
             {
@@ -322,16 +357,22 @@ namespace LiveCharts.Wpf
 
             #pragma warning disable 618
             var from = ChartFunctions.ToDrawMargin(double.IsNaN(FromValue) ? Value + SectionOffset : FromValue, source, Model.Chart, axis) + uw;
-#pragma warning restore 618
-#pragma warning disable 618
             var to = ChartFunctions.ToDrawMargin(double.IsNaN(ToValue) ? Value  + SectionOffset + SectionWidth : ToValue, source, Model.Chart, axis) + uw;
-#pragma warning restore 618
+            var from2 = double.IsNaN( From2Value ) ? 0 : ChartFunctions.ToDrawMargin( From2Value, source2, Model.Chart, axis ) + uw2;
+            var to2 = double.IsNaN(To2Value)? Model.Chart.DrawMargin.Width:ChartFunctions.ToDrawMargin( To2Value, source2, Model.Chart, axis ) + uw2;
+            #pragma warning restore 618
 
             if (from > to)
             {
                 var temp = to;
                 to = from;
                 from = temp;
+            }
+            if (from2 > to2)
+            {
+                var temp = to2;
+                to2 = from2;
+                from2 = temp;
             }
 
             var anSpeed = Model.Chart.View.AnimationsSpeed;
@@ -348,9 +389,11 @@ namespace LiveCharts.Wpf
             {
                 var w = to - from;
                 w = StrokeThickness > w ? StrokeThickness : w;
+                var h = to2 - from2;
+                h = StrokeThickness > h ? StrokeThickness : h;
 
-                Canvas.SetTop(_rectangle, 0);
-                _rectangle.Height = Model.Chart.DrawMargin.Height;
+                Canvas.SetTop(_rectangle, from2);
+                _rectangle.Height = h;
 
                 if (Model.Chart.View.DisableAnimations || DisableAnimations)
                 {
@@ -363,24 +406,27 @@ namespace LiveCharts.Wpf
                     _rectangle.BeginAnimation(Canvas.LeftProperty,
                         new DoubleAnimation(from - StrokeThickness / 2, anSpeed));
                 }
-                return;
-            }
-
-            var h = to - from;
-            h = StrokeThickness > h ? StrokeThickness : h;
-
-            Canvas.SetLeft(_rectangle, 0d);
-            _rectangle.Width = Model.Chart.DrawMargin.Width;
-
-            if (Model.Chart.View.DisableAnimations || DisableAnimations)
-            {
-                Canvas.SetTop(_rectangle, from - StrokeThickness/2);
-                _rectangle.Height = h > 0 ? h : 0;
             }
             else
             {
-                _rectangle.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(from, anSpeed));
-                _rectangle.BeginAnimation(HeightProperty, new DoubleAnimation(h, anSpeed));
+                var h = to - from;
+                h = StrokeThickness > h ? StrokeThickness : h;
+                var w = to2 - from2;
+                w = StrokeThickness > w ? StrokeThickness : w;
+
+                Canvas.SetLeft( _rectangle, from2 );
+                _rectangle.Width = w>0?w:0;
+
+                if (Model.Chart.View.DisableAnimations || DisableAnimations)
+                {
+                    Canvas.SetTop( _rectangle, from - StrokeThickness / 2 );
+                    _rectangle.Height = h > 0 ? h : 0;
+                }
+                else
+                {
+                    _rectangle.BeginAnimation( Canvas.TopProperty, new DoubleAnimation( from, anSpeed ) );
+                    _rectangle.BeginAnimation( HeightProperty, new DoubleAnimation( h, anSpeed ) );
+                }
             }
         }
 
